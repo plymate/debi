@@ -153,9 +153,9 @@ done
    done
    while [ $Ecount -lt 4 ]; do
    DATE=$(date -u +%Y%m%d)
-   TIME=$(date -u +%H%M%S%3N)
-   RFILENAME=$FilePRE"_S"$SiteNum"_G"$GAIN"_E"${Exposure[$Ecount]}"_T"$DATE"_"$TIME"-RAW.jpg"
-   JFILENAME=$FilePRE"_S"$SiteNum"_G"$GAIN"_E"${Exposure[$Ecount]}"_T"$DATE"_"$TIME".jpg"
+   FTIME=$(date -u +%H%M%S%3N)
+   RFILENAME=$FilePRE"_S"$SiteNum"_G"$GAIN"_E"${Exposure[$Ecount]}"_T"$DATE"_"$FTIME"-RAW.jpg"
+   JFILENAME=$FilePRE"_S"$SiteNum"_G"$GAIN"_E"${Exposure[$Ecount]}"_T"$DATE"_"$FTIME".jpg"
    echo "Filename= " $FILENAME "Start Time-" $(date +%H\:%M\:%S)
    StartTime=$((StartTime+Interval))
    printf "%(Next Exp. Time= %m/%d/%Y %H:%M:%S)T\n" $StartTime
