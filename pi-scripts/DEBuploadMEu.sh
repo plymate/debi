@@ -168,7 +168,7 @@ done
       sleep 0.1
       let Ncount=Ncount+1
     done
-    JFILENAME=$FilePRE"_S"$SiteNum"_G"$GAIN"_E"${Exposure[4]}"_T"$DATE"_"$TIME".jpg"
+    JFILENAME=$FilePRE"_S"$SiteNum"_G"$GAIN"_E"${Exposure[4]}"_T"$DATE"_"$FTIME".jpg"
     GetImage $GAIN ${Exposure[4]} $JFILENAME "" "$imgsize"
     rclone copyto ~/$Lsub/$JFILENAME $RcloneADD:/$Gsub/$JFILENAME
     echo "File write complete" $(date +%H:%M:%S) "("$(date -u +%H:%M:%S) "UTC)"
