@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# Usage:  DEBuploadV2.sh SiteNum StartDateTime RunTime Interval FilePRE Gsub
+# Usage:  DEBuploadMEuv1.sh SiteNum StartDateTime RunTime Interval FilePRE Gsub
 #	    This is the only required argument
 #	    These are optional arguments
 #		SiteNum= the site number you are given for your Pi location/device
@@ -14,8 +14,8 @@
 #*********** Functions  ***************************************************************************************************
 # Call: GetImage(GAIN Exposure Filename Rawmode Optns)
   GetImage () {
-       echo "GetImage file name=" $3
-       echo "GetImage Exposure=" $2
+       echo "Starting Exposure of" $2"usec Gain=" $1
+#       echo "Saving file to" $3
        raspistill -t 50 -md 3 -bm -ex off -ag $1 -ss $2 -q 100 $GPSst -x EXIF.FNumber=$FNum \
  	-x EXIF.FocalLength=$FLen -x EXIF.DigitalZoomRatio=$GAIN"/1" \
  	-x EXIF.ImageUniqueID="$Name" -x EXIF.MaxApertureValue=$SiteNum"/1" $4 $5 -o $3
@@ -25,7 +25,7 @@
 # Default values
   if [ $1 == "?" ]
   then
-    echo "Usage:  DEBuploadMEu.sh LDrive SiteNum Exposure Gain StartDateTime RunTime Interval FilePRE RcloneADD Gsub"
+    echo "Usage:  DEBuploadMEu.sh SiteNum StartDateTime RunTime Interval FilePRE Gsub"
     echo "SiteNum= the site number you are given for your Pi location/device"
     echo "StartDateTime= time to start in YYYY/MM/DD HH:MM:SS format or now to start immediatly"
     echo "RunTime= number of minutes to capture exposures"
@@ -43,11 +43,11 @@
     RunTime=5
     Interval=15
     FilePRE="klc"
-    Gsub=""
+    Gsub="LunarEclipse2024"
     Name="Kevin Cobble"
     FNum="4/1"
     FLen="75/1"
-    GPS=true
+    GPS=false
     imgsize="-w 1040 -h 760"		# jpeg image size  Set to "" for default size
 #************ These are the values for if you have a GPS (set to true) and for your local name for the Rclone address*
 # If you do not have a GPS enter your coordinates below Note the format as "Degrees/1,Minutes/1,Seconds/100" 
@@ -153,12 +153,10 @@ done
    done
    while [ $Ecount -lt 4 ]; do
    DATE=$(date -u +%Y%m%d)
-   FTIME=$(date -u +%H%M%S%3N)
-   RFILENAME=$FilePRE"_S"$SiteNum"_G"$GAIN"_E"${Exposure[$Ecount]}"_T"$DATE"_"$FTIME"-RAW.jpg"
-   JFILENAME=$FilePRE"_S"$SiteNum"_G"$GAIN"_E"${Exposure[$Ecount]}"_T"$DATE"_"$FTIME".jpg"
-   echo "Filename= " $FILENAME "Start Time-" $(date +%H\:%M\:%S)
-   StartTime=$((StartTime+Interval))
-   printf "%(Next Exp. Time= %m/%d/%Y %H:%M:%S)T\n" $StartTime
+   TIMEd=$(date -u +%H%M%S%3N)
+   RFILENAME=$FilePRE"_S"$SiteNum"_G"$GAIN"_E"${Exposure[$Ecount]}"_T"$DATE"_"$TIMEd"-RAW.jpg"
+#   JFILENAME=$FilePRE"_S"$SiteNum"_G"$GAIN"_E"${Exposure[$Ecount]}"_T"$DATE"_"$TIMEd".jpg"
+   echo "Filename= " $RFILENAME "Start Time-" $(date +%H\:%M\:%S)
    GetImage $GAIN ${Exposure[$Ecount]} $RFILENAME "-r" ""
 #   GetImage $GAIN ${Exposure[$Ecount]} $JFILENAME "" ""
    let Ecount=Ecount+1
@@ -168,10 +166,21 @@ done
       sleep 0.1
       let Ncount=Ncount+1
     done
-    JFILENAME=$FilePRE"_S"$SiteNum"_G"$GAIN"_E"${Exposure[4]}"_T"$DATE"_"$FTIME".jpg"
+    TIMEd=$(date -u +%H%M%S%3N)
+    JFILENAME=$FilePRE"_S"$SiteNum"_G"$GAIN"_E"${Exposure[4]}"_T"$DATE"_"$TIMEd".jpg"
+     echo "Filename= " $JFILENAME "Start Time-" $(date +%H\:%M\:%S)
     GetImage $GAIN ${Exposure[4]} $JFILENAME "" "$imgsize"
     rclone copyto ~/$Lsub/$JFILENAME $RcloneADD:/$Gsub/$JFILENAME
     echo "File write complete" $(date +%H:%M:%S) "("$(date -u +%H:%M:%S) "UTC)"
+    TIME=$(date +%s)
+    StartTime=$((StartTime+Interval))
+    if [[ $StartTime -lt $TIME ]]
+    then
+       proctime=$((TIME-StartTime+Interval))
+       echo "WARNING: Processing is taking" $proctime "sec. which is longer than the given Interval-" $Interval "sec."
+       StartTime=$(date +%s)
+    fi
+    printf "%(Next Exp. Time= %m/%d/%Y %H:%M:%S)T\n" $StartTime
     echo "*******************************************************"
  done
  fi
